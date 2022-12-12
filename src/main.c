@@ -63,6 +63,13 @@ void update(){
 }
 
 void render(){
+    //RGB opaque
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    //start drawing game objects.
+    //do a buffer swap.
+    SDL_RenderPresent(renderer);
 
 }
 
