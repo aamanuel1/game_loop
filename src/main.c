@@ -7,6 +7,8 @@ int game_is_running = FALSE;
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 
+int last_frame_time = 0;
+
 //Struct of the game ball.
 struct ball{
     float x;
@@ -70,7 +72,18 @@ void setup(){
 }
 
 void update(){
+    //fix the timestep to be 30fps.
+    //wastes time until the frame target time
+    while(!SDL_TICKS_PASSED(SDL_GetTicks(), last_frame_time + FRAME_TARGET_TIME)); // Empty while to lock execution.
 
+    //get delta time factor converted to seconds for update
+    float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0f;  //float division
+
+    //how many frames since init.
+    last_frame_time = SDL_GetTicks();
+
+    ball.x += 70 * delta_time;
+    ball.y += 50 * delta_time;
 }
 
 void render(){
@@ -79,7 +92,12 @@ void render(){
     SDL_RenderClear(renderer);
 
     //Draw rectangle
-    SDL_Rect ball_rect = {ball.x, ball.y, ball.width, ball.height};
+    SDL_Rect ball_rect = {
+        //cast to int.
+        (int)ball.x, 
+        (int)ball.y, 
+        (int)ball.width, 
+        (int)ball.height};
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(renderer, &ball_rect);
