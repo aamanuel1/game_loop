@@ -10,6 +10,7 @@ SDL_Renderer* renderer = NULL;
 int last_frame_time = 0;
 
 //Struct of the game ball.
+//TODO: make general for paddles and ball
 struct ball{
     float x;
     float y;
@@ -59,6 +60,12 @@ void process_input(){
             if(event.key.keysym.sym == SDLK_ESCAPE)
             game_is_running = FALSE;
             break;
+            // TODO: Set paddle velocity based on left/right arrow keys
+            // ...
+        case SDL_KEYUP:
+            // TODO: Reset paddle velocity based on left/right arrow keys
+            // ...
+            break;
         
     }
 
@@ -69,11 +76,15 @@ void setup(){
     ball.y = 20;
     ball.width = 15;
     ball.height = 15;
+    //TODO initialize velocity x and y
+
+    //TODO initialize paddle position at the bottom of the screen.
 }
 
 void update(){
     //fix the timestep to be 30fps.
     //wastes time until the frame target time
+    //TODO: replace while loop with SDL delay function.
     while(!SDL_TICKS_PASSED(SDL_GetTicks(), last_frame_time + FRAME_TARGET_TIME)); // Empty while to lock execution.
 
     //get delta time factor converted to seconds for update
@@ -84,6 +95,21 @@ void update(){
 
     ball.x += 70 * delta_time;
     ball.y += 50 * delta_time;
+    
+    // TODO: Update paddle position based on its velocity
+    // ...
+
+    // TODO: Check for ball collision with the walls
+    // ...
+
+    // TODO: Check for ball collision with the paddle
+    // ...
+
+    // TODO: Prevent paddle from moving outside the boundaries of the window
+    // ...
+
+    // TODO: Check for game over when ball hits the bottom part of the screen
+    // ...
 }
 
 void render(){
@@ -101,6 +127,8 @@ void render(){
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(renderer, &ball_rect);
+
+    // Draw a rectangle for the paddle object
 
     //start drawing game objects.
     //do a buffer swap.
@@ -128,8 +156,10 @@ int main(){
         update();
         render();
     }
+
+    destroy_window();
+
     return 0;
 
-    //This window will self destruct.
-    destroy_window();
+
 }
