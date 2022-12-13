@@ -11,12 +11,14 @@ int last_frame_time = 0;
 
 //Struct of the game ball.
 //TODO: make general for paddles and ball
-struct ball{
+struct game_object{
     float x;
     float y;
     float width;
     float height;
-} ball;
+    float velocity_x;
+    float velocity_y;
+} ball, paddle;
 
 int initialize_window(void){
     if(SDL_Init(SDL_INIT_EVERYTHING)){
@@ -57,18 +59,26 @@ void process_input(){
             game_is_running = FALSE;
             break;
         case SDL_KEYDOWN:   //press esc key.
-            if(event.key.keysym.sym == SDLK_ESCAPE)
-            game_is_running = FALSE;
-            break;
-            // TODO: Set paddle velocity based on left/right arrow keys
-            // ...
+            if(event.key.keysym.sym == SDLK_ESCAPE){
+                game_is_running = FALSE;
+                break;
+            }
+            // Set paddle velocity based on left/right arrow keys
+            if(event.key.keysym.sym == SDL_KEYLEFT){
+                paddle.velocity_x = -400;
+            }
+            if(event.key.keysym.sym == SDL_KEYRIGHT){
+                paddle.velocity_x = 400;
+            }
         case SDL_KEYUP:
-            // TODO: Reset paddle velocity based on left/right arrow keys
-            // ...
+            if(event.key.keysim.sym == SDL_KEYLEFT){
+                paddle.velocity_x = 0;
+            }
+            if(event.key.keysym.sym == SDL_KEYRIGHT){
+                paddle.velocity_x = 0;
+            }
             break;
-        
     }
-
 }
 
 void setup(){
@@ -76,9 +86,16 @@ void setup(){
     ball.y = 20;
     ball.width = 15;
     ball.height = 15;
-    //TODO initialize velocity x and y
-
-    //TODO initialize paddle position at the bottom of the screen.
+    //initialize velocity x and y
+    ball.velocity_x = 300;
+    ball.velocity_y = 300;
+    //initialize paddle position at the bottom of the screen.
+    paddle.width = 100;
+    paddle.height = 20;
+    paddle.x = (WINDOW_WIDTH / 2) - (paddle.width / 2);
+    paddle.y = WINDOW_HEIGHT - 40;
+    paddle.velocity_x = 0;
+    paddle.velocity_y = 0;
 }
 
 void update(){
@@ -129,6 +146,14 @@ void render(){
     SDL_RenderFillRect(renderer, &ball_rect);
 
     // Draw a rectangle for the paddle object
+    SDL_Rect paddle_rect = {
+        (int)paddle.x,
+        (int)paddle.y,
+        (int)paddle.width,
+        (int)paddle.height
+    };
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderFillRect(renderer, &paddle_rect);
 
     //start drawing game objects.
     //do a buffer swap.
