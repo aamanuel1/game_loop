@@ -10,7 +10,7 @@ SDL_Renderer* renderer = NULL;
 int last_frame_time = 0;
 
 //Struct of the game ball.
-//TODO: make general for paddles and ball
+//generalized struct for both paddles and ball
 struct game_object{
     float x;
     float y;
@@ -58,7 +58,7 @@ void process_input(){
         case SDL_QUIT:  //Click x button.
             game_is_running = FALSE;
             break;
-        case SDL_KEYDOWN:   //press esc key.
+        case SDL_KEYDOWN:
             if(event.key.keysym.sym == SDLK_ESCAPE){
                 game_is_running = FALSE;
                 break;
@@ -70,6 +70,8 @@ void process_input(){
             if(event.key.keysym.sym == SDLK_RIGHT){
                 paddle.velocity_x = 400;
             }
+            //Forgot to stop the switch from falling through and keeping the program from not moving.
+            break;
         case SDL_KEYUP:
             if(event.key.keysym.sym == SDLK_LEFT){
                 paddle.velocity_x = 0;
@@ -142,12 +144,12 @@ void update(){
     if(paddle.x <= 0){
         paddle.x = 0;
     }
-
+    // Forgot to bound to the right side.
     if(paddle.x >= WINDOW_WIDTH - paddle.width){
-        paddle.x = 0;
+        paddle.x = WINDOW_WIDTH - paddle.width;
     }
 
-    // TODO: Check for game over when ball hits the bottom part of the screen
+    // Check for game over when ball hits the bottom part of the screen
     // If the ball y and ball height (top of ball) is greater than window height then send the ball back
     // to the middle top.
     if(ball.y + ball.height > WINDOW_HEIGHT){
