@@ -118,11 +118,11 @@ void update(){
     // Update paddle position based on its velocity
     // Use delta time and the ball and paddle velocity to get the x and y pos.
     paddle.x += paddle.velocity_x * delta_time;
-    paddle.y = paddle.velocity_y;
+    paddle.y += paddle.velocity_y * delta_time;
 
     // Check for ball collision with the walls
     // Check if x is less than 0 or greater than the window width. if it is then reverse direction
-    if(ball.x < 0 || ball.x > WINDOW_WIDTH){
+    if(ball.x <= 0 || ball.x + ball.width >= WINDOW_WIDTH){
         ball.velocity_x = -ball.velocity_x;
     }
     // Check if y is less than 0 (the top). If it is then reverse direction
@@ -133,14 +133,18 @@ void update(){
     // Check for ball collision with the paddle
     // Check if ball y and ball height is greater than or equal to paddle y
     // Check if ball x is to the left of the paddle, or right of the paddle
-    if((ball.y + ball.height >= paddle.y) && (ball.x <= paddle.x) && (ball.x >= paddle.x + paddle.width)){
+    if((ball.y + ball.height >= paddle.y) && (ball.x <= paddle.x + paddle.width) && (ball.x + ball.width >= paddle.x)){
         ball.velocity_y = -ball.velocity_y;
     }
 
-    // TODO: Prevent paddle from moving outside the boundaries of the window
+    // Prevent paddle from moving outside the boundaries of the window
     // If the paddle x is 0 (left side) or window width (right side). then velocity is 0
-    if(paddle.x <= 0 || paddle.x > WINDOW_WIDTH){
-        paddle.velocity_y = 0;
+    if(paddle.x <= 0){
+        paddle.x = 0;
+    }
+
+    if(paddle.x >= WINDOW_WIDTH - paddle.width){
+        paddle.x = 0;
     }
 
     // TODO: Check for game over when ball hits the bottom part of the screen
