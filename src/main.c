@@ -64,17 +64,17 @@ void process_input(){
                 break;
             }
             // Set paddle velocity based on left/right arrow keys
-            if(event.key.keysym.sym == SDL_KEYLEFT){
+            if(event.key.keysym.sym == SDLK_LEFT){
                 paddle.velocity_x = -400;
             }
-            if(event.key.keysym.sym == SDL_KEYRIGHT){
+            if(event.key.keysym.sym == SDLK_RIGHT){
                 paddle.velocity_x = 400;
             }
         case SDL_KEYUP:
-            if(event.key.keysim.sym == SDL_KEYLEFT){
+            if(event.key.keysym.sym == SDLK_LEFT){
                 paddle.velocity_x = 0;
             }
-            if(event.key.keysym.sym == SDL_KEYRIGHT){
+            if(event.key.keysym.sym == SDLK_RIGHT){
                 paddle.velocity_x = 0;
             }
             break;
@@ -101,32 +101,55 @@ void setup(){
 void update(){
     //fix the timestep to be 30fps.
     //wastes time until the frame target time
-    //TODO: replace while loop with SDL delay function.
-    while(!SDL_TICKS_PASSED(SDL_GetTicks(), last_frame_time + FRAME_TARGET_TIME)); // Empty while to lock execution.
+    int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - last_frame_time); // Empty while to lock execution.
 
+    if(time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME){
+        SDL_Delay(time_to_wait);
+    }
     //get delta time factor converted to seconds for update
     float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0f;  //float division
 
     //how many frames since init.
     last_frame_time = SDL_GetTicks();
 
-    ball.x += 70 * delta_time;
-    ball.y += 50 * delta_time;
+    ball.x += ball.velocity_x * delta_time;
+    ball.y += ball.velocity_y * delta_time;
     
-    // TODO: Update paddle position based on its velocity
-    // ...
+    // Update paddle position based on its velocity
+    // Use delta time and the ball and paddle velocity to get the x and y pos.
+    paddle.x += paddle.velocity_x * delta_time;
+    paddle.y = paddle.velocity_y;
 
-    // TODO: Check for ball collision with the walls
-    // ...
+    // Check for ball collision with the walls
+    // Check if x is less than 0 or greater than the window width. if it is then reverse direction
+    if(ball.x < 0 || ball.x > WINDOW_WIDTH){
+        ball.velocity_x = -ball.velocity_x;
+    }
+    // Check if y is less than 0 (the top). If it is then reverse direction
+    if(ball.y < 0){
+        ball.velocity_y = -ball.velocity_y;
+    }
 
-    // TODO: Check for ball collision with the paddle
-    // ...
+    // Check for ball collision with the paddle
+    // Check if ball y and ball height is greater than or equal to paddle y
+    // Check if ball x is to the left of the paddle, or right of the paddle
+    if((ball.y + ball.height >= paddle.y) && (ball.x <= paddle.x) && (ball.x >= paddle.x + paddle.width)){
+        ball.velocity_y = -ball.velocity_y;
+    }
 
     // TODO: Prevent paddle from moving outside the boundaries of the window
-    // ...
+    // If the paddle x is 0 (left side) or window width (right side). then velocity is 0
+    if(paddle.x <= 0 || paddle.x > WINDOW_WIDTH){
+        paddle.velocity_y = 0;
+    }
 
     // TODO: Check for game over when ball hits the bottom part of the screen
-    // ...
+    // If the ball y and ball height (top of ball) is greater than window height then send the ball back
+    // to the middle top.
+    if(ball.y + ball.height > WINDOW_HEIGHT){
+        ball.x = WINDOW_WIDTH / 2;
+        ball.y = 0;
+    }
 }
 
 void render(){
