@@ -2,7 +2,7 @@
 #include <SDL2/SDL.h>
 #include "./constants.h"
 
-//That's a lot of globals.
+//Game globals section
 int game_is_running = FALSE;
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
@@ -10,7 +10,7 @@ SDL_Renderer* renderer = NULL;
 int last_frame_time = 0;
 
 //Struct of the game ball.
-//generalized struct for both paddles and ball
+//generalized struct for 2 paddles and a ball
 struct game_object{
     float x;
     float y;
@@ -18,7 +18,7 @@ struct game_object{
     float height;
     float velocity_x;
     float velocity_y;
-} ball, paddle;
+} ball, paddle, paddle2;
 
 int initialize_window(void){
     if(SDL_Init(SDL_INIT_EVERYTHING)){
@@ -91,13 +91,33 @@ void setup(){
     //initialize velocity x and y
     ball.velocity_x = 300;
     ball.velocity_y = 300;
-    //initialize paddle position at the bottom of the screen.
+    //initialize paddle 1 position at the bottom of the screen.
     paddle.width = 100;
     paddle.height = 20;
     paddle.x = (WINDOW_WIDTH / 2) - (paddle.width / 2);
     paddle.y = WINDOW_HEIGHT - 40;
     paddle.velocity_x = 0;
     paddle.velocity_y = 0;
+    //initialize paddle2 position at the top of the screen.
+    paddle2.width = 100;
+    paddle2.height = 20;
+    paddle2.x = (WINDOW_WIDTH / 2) - (paddle2.width / 2);
+    paddle2.y = 20;
+    paddle2.velocity_x = 0;
+    paddle2.velocity_y = 0;
+}
+
+// Paddle2 game ai (pretty much just follows the ball)
+void paddle2_ai(){
+    if(ball.x > paddle2.x + paddle2.width / 2){
+        paddle2.velocity_x = 300;
+    }
+    else if(ball.x < paddle2.x + paddle2.width / 2){
+        paddle2.velocity_x = -300;
+    }
+    else{
+        paddle2.velocity_x = 0;
+    }
 }
 
 void update(){
@@ -122,6 +142,10 @@ void update(){
     paddle.x += paddle.velocity_x * delta_time;
     paddle.y += paddle.velocity_y * delta_time;
 
+    // Update paddle2 position
+    paddle2.x += paddle2.velocity_x * delta_time;
+    paddle2.y += paddle2.velocity_y * delta_time;
+
     // Check for ball collision with the walls
     // Check if x is less than 0 or greater than the window width. if it is then reverse direction
     if(ball.x <= 0 || ball.x + ball.width >= WINDOW_WIDTH){
@@ -139,6 +163,11 @@ void update(){
         ball.velocity_y = -ball.velocity_y;
     }
 
+    //Ball collisiion with paddle2
+    if ((ball.y <= paddle2.y + paddle2.height) && (ball.x <= paddle2.x + paddle2.width) && (ball.x + ball.width >= paddle2.x)){
+        ball.velocity_y = -ball.velocity_y;
+    }
+
     // Prevent paddle from moving outside the boundaries of the window
     // If the paddle x is 0 (left side) or window width (right side). then velocity is 0
     if(paddle.x <= 0){
@@ -149,12 +178,27 @@ void update(){
         paddle.x = WINDOW_WIDTH - paddle.width;
     }
 
+    // Paddle2 collision with wall
+    if(paddle2.x <= 0){
+        paddle2.x = 0;
+    }
+
+    if(paddle2.x >= WINDOW_WIDTH - paddle2.width){
+        paddle2.x = WINDOW_WIDTH - paddle2.width;
+    }
+
     // Check for game over when ball hits the bottom part of the screen
     // If the ball y and ball height (top of ball) is greater than window height then send the ball back
     // to the middle top.
     if(ball.y + ball.height > WINDOW_HEIGHT){
         ball.x = WINDOW_WIDTH / 2;
         ball.y = 0;
+    }
+
+    //Check game over for top of screen send to middle bottom.
+    if(ball.y < 0){
+        ball.x = WINDOW_WIDTH / 2;
+        ball.y = WINDOW_HEIGHT;
     }
 }
 
@@ -184,6 +228,17 @@ void render(){
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(renderer, &paddle_rect);
 
+    //Render the 2nd paddle
+    SDL_Rect paddle2_rect = {
+        (int)paddle2.x,
+        (int)paddle2.y,
+        (int)paddle2.width,
+        (int)paddle2.height
+    };
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderFillRect(renderer, &paddle2_rect);
+
     //start drawing game objects.
     //do a buffer swap.
     SDL_RenderPresent(renderer);
@@ -207,6 +262,7 @@ int main(){
     while(game_is_running){
         //The holy trinity of the game loop.
         process_input();
+        paddle2_ai();
         update();
         render();
     }
